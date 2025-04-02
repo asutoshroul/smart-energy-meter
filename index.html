@@ -1,0 +1,62 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart IoT Energy Meter - Premium</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.4/axios.min.js"></script>
+    
+    <!-- Prevent Caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Ensure CSS Loads Properly -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="login-container">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="User ID">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p id="login-error"></p>
+    </div>
+
+    <!-- Main App Section -->
+    <div id="app-container" class="hidden">
+        <h2>Smart IoT Energy Meter</h2>
+
+        <!-- Live Data Section -->
+        <div class="section">
+            <h3>Live Data</h3>
+            <div class="data">Voltage: <span id="voltage">--</span> V</div>
+            <div class="data">Current: <span id="current">--</span> A</div>
+            <div class="data">Power: <span id="power">--</span> W</div>
+            <div class="data">Units: <span id="unit">--</span> kWh</div>
+            <div class="data total-cost">Total Cost: ₹<span id="cost">--</span></div>
+            <button class="refresh-button" onclick="refreshData()">Refresh Data</button>
+        </div>
+
+        <!-- Pay Bill Section -->
+        <div class="section">
+            <h3>Pay Bill</h3>
+            <button class="pay-button" onclick="payBill()">Pay Now</button>
+        </div>
+
+        <!-- Logout Button -->
+        <button id="logout-button" class="logout-button" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Payment Failed Modal -->
+    <div id="payment-failed-modal" class="modal">
+        <div class="modal-content">
+            <h3>Payment Failed</h3>
+          <p>Payment Failed!</p>There was an issue processing your payment.</p>
+            <button class="close-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
