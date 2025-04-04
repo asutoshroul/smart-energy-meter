@@ -1,6 +1,5 @@
 const BLYNK_AUTH_TOKEN = "3uAt31-2E_HzK2VSp0FKfo4noABBp5oR";
-const BLYNK_BASE_URL = `https://blynk.cloud/external/api/get?token=${BLYNK_AUTH_TOKEN}&`;
-
+const PROXY_URL = "http://localhost:3000/api/blynk"; // Proxy server endpoint
 const PREMIUM_USER = "21beee22";
 const PREMIUM_PASS = "12345";
 
@@ -19,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("visibilitychange", function () {
     if (!document.hidden && sessionStorage.getItem("paymentRedirect")) {
         sessionStorage.removeItem("paymentRedirect");
-        document.getElementById("payment-failed-modal").style.display = "flex"; // Show Payment Failed
+        document.getElementById("payment-failed-modal").style.display = "flex";
     }
 });
 
@@ -41,26 +40,34 @@ function login() {
 // Logout Function
 function logout() {
     localStorage.removeItem("loggedIn");
-    sessionStorage.removeItem("paymentRedirect"); // Prevent modal from appearing after logout
+    sessionStorage.removeItem("paymentRedirect");
     window.location.href = "index.html";
 }
 
-// Fetch real-time data
+// Fetch real-time data through proxy
 async function fetchData() {
     try {
-        let voltage = await axios.get(BLYNK_BASE_URL + 'V0');
-        let current = await axios.get(BLYNK_BASE_URL + 'V1');
-        let power = await axios.get(BLYNK_BASE_URL + 'V2');
-        let unit = await axios.get(BLYNK_BASE_URL + 'V3');
-        let cost = await axios.get(BLYNK_BASE_URL + 'V4');
+        const pins = ['V0', 'V1', 'V2', 'V3', 'V4'];
+        const responses = await Promise.all(
+            pins.map(pin => axios.get(`${PROXY_URL}?pin=${pin}`))
+        );
 
-        document.getElementById("voltage").innerText = voltage.data;
-        document.getElementById("current").innerText = current.data;
-        document.getElementById("power").innerText = power.data;
-        document.getElementById("unit").innerText = unit.data;
-        document.getElementById("cost").innerText = cost.data;
+        // Update UI only if all responses are valid
+        if (responses.every(r => r.data && r.data.value !== undefined)) {
+            document.getElementById("voltage").innerText = responses[0].data.value;
+            document.getElementById("current").innerText = responses[1].data.value;
+            document.getElementById("power").innerText = responses[2].data.value;
+            document.getElementById("unit").innerText = responses[3].data.value;
+            document.getElementById("cost").innerText = responses[4].data.value;
+        } else {
+            throw new Error("Invalid data received from Blynk");
+        }
     } catch (error) {
-        console.error("Error fetching data", error);
+        console.error("Error fetching data:", error);
+        // Show placeholder values on error
+        ['voltage', 'current', 'power', 'unit', 'cost'].forEach(id => {
+            document.getElementById(id).innerText = "--";
+        });
     }
 }
 
@@ -81,7 +88,6 @@ function refreshData() {
 function payBill() {
     let amount = document.getElementById("cost").innerText.trim();
     
-    // ✅ Prevents payment if amount is missing or "--"
     if (!amount || amount === "--") {
         alert("Cannot proceed with payment. Amount is invalid.");
         return;
@@ -92,9 +98,8 @@ function payBill() {
 
     let upiUrl = `upi://pay?pa=${userUPI}&pn=Electricity&am=${amount}&cu=INR&tn=${transactionNote}`;
 
-    sessionStorage.setItem("paymentRedirect", "true"); // Mark UPI redirection
+    sessionStorage.setItem("paymentRedirect", "true");
 
-    // Open UPI in a new tab
     let newWindow = window.open(upiUrl, "_blank");
 
     if (!newWindow || newWindow.closed || typeof newWindow.closed == "undefined") {
