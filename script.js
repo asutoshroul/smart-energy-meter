@@ -76,7 +76,7 @@ function refreshData() {
 function payBill() {
     let amount = document.getElementById("cost").innerText.trim();
     
-    if (!amount || amount === "0") {
+    if (!amount || amount === "0" || amount === "--") {
         alert("Cannot proceed with payment. Amount is invalid.");
         return;
     }
