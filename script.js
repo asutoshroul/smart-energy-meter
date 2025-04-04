@@ -14,15 +14,13 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("payment-failed-modal").style.display = "none";
 });
 
-// Listen for tab visibility change (detect return from UPI)
 document.addEventListener("visibilitychange", function () {
     if (!document.hidden && sessionStorage.getItem("paymentRedirect")) {
         sessionStorage.removeItem("paymentRedirect");
-        document.getElementById("payment-failed-modal").style.display = "flex"; // Show Payment Failed
+        document.getElementById("payment-failed-modal").style.display = "flex";
     }
 });
 
-// Login Function
 function login() {
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
@@ -37,33 +35,32 @@ function login() {
     }
 }
 
-// Logout Function
 function logout() {
     localStorage.removeItem("loggedIn");
-    sessionStorage.removeItem("paymentRedirect"); // Prevent modal from appearing after logout
+    sessionStorage.removeItem("paymentRedirect");
     window.location.href = "index.html";
 }
 
-// Fetch real-time data using proxy
 async function fetchData() {
     try {
-        let voltage = await axios.get(`${PROXY_URL}?V0`);
-        let current = await axios.get(`${PROXY_URL}?V1`);
-        let power = await axios.get(`${PROXY_URL}?V2`);
-        let unit = await axios.get(`${PROXY_URL}?V3`);
-        let cost = await axios.get(`${PROXY_URL}?V4`);
+        const [voltage, current, power, unit, cost] = await Promise.all([
+            axios.get(`${PROXY_URL}?V0`),
+            axios.get(`${PROXY_URL}?V1`),
+            axios.get(`${PROXY_URL}?V2`),
+            axios.get(`${PROXY_URL}?V3`),
+            axios.get(`${PROXY_URL}?V4`)
+        ]);
 
-        document.getElementById("voltage").innerText = voltage.data.value;
-        document.getElementById("current").innerText = current.data.value;
-        document.getElementById("power").innerText = power.data.value;
-        document.getElementById("unit").innerText = unit.data.value;
-        document.getElementById("cost").innerText = cost.data.value;
+        document.getElementById("voltage").innerText = voltage.data;
+        document.getElementById("current").innerText = current.data;
+        document.getElementById("power").innerText = power.data;
+        document.getElementById("unit").innerText = unit.data;
+        document.getElementById("cost").innerText = cost.data;
     } catch (error) {
         console.error("Error fetching data", error);
     }
 }
 
-// Refresh button function
 function refreshData() {
     const refreshButton = document.querySelector('.refresh-button');
     refreshButton.innerText = "Refreshing...";
@@ -76,11 +73,9 @@ function refreshData() {
     }, 2000);
 }
 
-// Pay Bill Function (Triggers UPI)
 function payBill() {
     let amount = document.getElementById("cost").innerText.trim();
     
-    // ✅ Prevents payment if amount is missing or "--"
     if (!amount || amount === "--") {
         alert("Cannot proceed with payment. Amount is invalid.");
         return;
@@ -91,9 +86,8 @@ function payBill() {
 
     let upiUrl = `upi://pay?pa=${userUPI}&pn=Electricity&am=${amount}&cu=INR&tn=${transactionNote}`;
 
-    sessionStorage.setItem("paymentRedirect", "true"); // Mark UPI redirection
+    sessionStorage.setItem("paymentRedirect", "true");
 
-    // Open UPI in a new tab
     let newWindow = window.open(upiUrl, "_blank");
 
     if (!newWindow || newWindow.closed || typeof newWindow.closed == "undefined") {
@@ -101,7 +95,6 @@ function payBill() {
     }
 }
 
-// Close "Payment Failed" modal
 function closeModal() {
     document.getElementById("payment-failed-modal").style.display = "none";
 }
