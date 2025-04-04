@@ -1,4 +1,4 @@
-const PROXY_URL = "https://blynk-proxy.onrender.com/api/blynk";
+const PROXY_URL = "https://blynk-proxy.onrender.com/get";
 
 const PREMIUM_USER = "21beee22";
 const PREMIUM_PASS = "12345";
@@ -47,11 +47,11 @@ function logout() {
 // Fetch real-time data using proxy
 async function fetchData() {
     try {
-        let voltage = await axios.get(`${PROXY_URL}?pin=V0`);
-        let current = await axios.get(`${PROXY_URL}?pin=V1`);
-        let power = await axios.get(`${PROXY_URL}?pin=V2`);
-        let unit = await axios.get(`${PROXY_URL}?pin=V3`);
-        let cost = await axios.get(`${PROXY_URL}?pin=V4`);
+        let voltage = await axios.get(`${PROXY_URL}?V0`);
+        let current = await axios.get(`${PROXY_URL}?V1`);
+        let power = await axios.get(`${PROXY_URL}?V2`);
+        let unit = await axios.get(`${PROXY_URL}?V3`);
+        let cost = await axios.get(`${PROXY_URL}?V4`);
 
         document.getElementById("voltage").innerText = voltage.data.value;
         document.getElementById("current").innerText = current.data.value;
